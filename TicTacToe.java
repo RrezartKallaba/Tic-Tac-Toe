@@ -166,6 +166,7 @@ public class TicTacToe implements Runnable {
                 drawWinningLine(g, g2);
                 drawEndGameMessage(g, g2);
             }
+
             if (tie) {
                 Graphics2D g2 = (Graphics2D) g;
                 g.setColor(Color.BLACK);
@@ -266,14 +267,21 @@ public class TicTacToe implements Runnable {
                     spaces[space] = "X";
                 else
                     spaces[space] = "O";
+
+                // Move the following lines here to check for win/tie after updating the game
+                // state
+                yourTurn = true;
                 checkForEnemyWin();
                 checkForTie();
-                yourTurn = true;
             } catch (IOException e) {
                 e.printStackTrace();
                 errors++;
             }
         }
+
+        // Move these lines outside the if block to check for win/tie after each tick
+        checkForWin();
+        checkForTie();
     }
 
     private void checkForWin() {
@@ -313,12 +321,18 @@ public class TicTacToe implements Runnable {
     }
 
     private void checkForTie() {
-        for (int i = 0; i < spaces.length; i++) {
-            if (spaces[i] == null) {
-                return;
+        // Check for a win first before checking for a tie
+        checkForWin();
+
+        // If neither player has won and all spaces are filled, set tie to true
+        if (!won && !enemyWon) {
+            for (int i = 0; i < spaces.length; i++) {
+                if (spaces[i] == null) {
+                    return;
+                }
             }
+            tie = true;
         }
-        tie = true;
     }
 
     private void listenForServerRequest() {
