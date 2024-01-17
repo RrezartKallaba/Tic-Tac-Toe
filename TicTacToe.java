@@ -49,6 +49,8 @@ public class TicTacToe implements Runnable {
     private String[] spaces = new String[9];
 
     private boolean yourTurn = false;
+    private boolean opponentTurn = false;
+
     private boolean circle = true;
     private boolean accepted = false;
     private boolean unableToCommunicateWithOpponent = false;
@@ -62,6 +64,14 @@ public class TicTacToe implements Runnable {
     private int errors = 0;
     private int firstSpot = -1;
     private int secondSpot = -1;
+
+    private int player1Timer = 5; // Koha fillestare për lojtarin 1 (në sekonda)
+    private int player2Timer = 5; // Koha fillestare për lojtarin 2 (në sekonda)
+    private boolean timerExpired = false; // Tregon nëse timeri ka skaduar
+    private int player1TimerDisplay = 5; // Koha e shfaqur për lojtarin 1 (në sekonda)
+    private int player2TimerDisplay = 5; // Koha e shfaqur për lojtarin 2 (në sekonda)
+
+    private boolean timerRunning = false; // Tregon nëse timer është duke u ekzekutuar
 
     private Font font = new Font("Verdana", Font.BOLD, 32);
     private Font smallerFont = new Font("Verdana", Font.BOLD, 20);
@@ -256,6 +266,40 @@ public class TicTacToe implements Runnable {
         g.drawString(waitingString, boardX + (WIDTH - stringWidth) / 2, boardY + HEIGHT / 2);
     }
 
+    private void startTimer() {
+        if (!timerRunning) {
+            timerRunning = true;
+            Thread timerThread = new Thread(() -> {
+                while (timerRunning) {
+                    try {
+                        Thread.sleep(1000);
+                        if (yourTurn) {
+                            player1Timer--;
+                        } else {
+                            player2Timer--;
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            timerThread.start();
+        }
+    }
+
+    private void resetTimerForCurrentPlayer() {
+        if (circle) {
+            player1Timer = 5;
+        } else {
+            player2Timer = 5;
+        }
+    }
+
+    private void updateTimersForDisplay() {
+        player1TimerDisplay = (yourTurn) ? player1Timer : player1Timer - 1;
+        player2TimerDisplay = (!yourTurn) ? player2Timer : player2Timer - 1;
+    }
+
     private void tick() {
         if (errors >= 10)
             unableToCommunicateWithOpponent = true;
@@ -268,20 +312,56 @@ public class TicTacToe implements Runnable {
                 else
                     spaces[space] = "O";
 
-                // Move the following lines here to check for win/tie after updating the game
-                // state
                 yourTurn = true;
+                resetTimerForCurrentPlayer(); // Riazhoni timerin kur fillon radha e lojtarit
+                timerExpired = false;
                 checkForEnemyWin();
                 checkForTie();
+
+                // Nisni timerin kur merrni një levizje nga kundershti
+                startTimer();
             } catch (IOException e) {
                 e.printStackTrace();
                 errors++;
             }
         }
 
-        // Move these lines outside the if block to check for win/tie after each tick
+        // Kontrollo kohën për lojtarin aktual dhe ndërprit lojën nëse koha ka skaduar
+        checkTimer();
+
+        // Përditëso kohën e shfaqur në klasën Painter
+        updateTimersForDisplay();
+
+        // Kontrollo për fitoren dhe barazimet
         checkForWin();
         checkForTie();
+    }
+
+    private void checkTimer() {
+        if (timerExpired) {
+            System.out.println("Koha ka skaduar!"); // Kontrollo në console
+            // Koha ka skaduar, ndërprit lojën dhe kaloni tek lojtari tjetër
+            switchTurns();
+        } else if (yourTurn && player1Timer <= 0) {
+            System.out.println("Koha ka skaduar për lojtarin 1!"); // Kontrollo në console
+            // Koha ka skaduar për lojtarin 1, ndërprit lojën ose ndërroni lojtarin
+            timerExpired = true;
+        } else if (!yourTurn && player2Timer <= 0) {
+            System.out.println("Koha ka skaduar për lojtarin 2!"); // Kontrollo në console
+            // Koha ka skaduar për lojtarin 2, ndërprit lojën ose ndërroni lojtarin
+            timerExpired = true;
+        }
+    }
+
+    private void switchTurns() {
+        System.out.println("Kalimi i radhës së lojtarëve!"); // Kontrollo në console
+        yourTurn = !yourTurn;
+        opponentTurn = !yourTurn; // Përditëso variablën e re
+        System.out.println("yourTurn aktual: " + yourTurn); // Shtoni këtë printim
+        System.out.println("opponentTurn aktual: " + opponentTurn); // Shtoni këtë prinUSER tim
+        resetTimerForCurrentPlayer(); // Riazhoni timerin për lojtarin aktual
+        timerExpired = false;
+        startTimer(); // Nisni timerin për lojtarin aktual
     }
 
     private void checkForWin() {
@@ -408,6 +488,14 @@ public class TicTacToe implements Runnable {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             render(g);
+
+            // Shfaq kohën e lojtarit aktual
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Verdana", Font.BOLD, 18));
+            g.setColor(Color.RED);
+            String timerDisplay = (yourTurn) ? "Your Time: " + player1TimerDisplay + "s"
+                    : "Opponent's Time: " + player2TimerDisplay + "s";
+            g.drawString(timerDisplay, 180, 50);
         }
 
         @Override
