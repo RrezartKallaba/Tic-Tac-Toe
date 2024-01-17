@@ -45,6 +45,7 @@ public class TicTacToe implements Runnable {
 
     private String[] spaces = new String[9];
 
+    
     private boolean yourTurn = false;
     private boolean circle = true;
     private boolean accepted = false;
