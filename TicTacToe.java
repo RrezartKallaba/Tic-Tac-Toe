@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -18,7 +20,9 @@ import java.net.Socket;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class TicTacToe implements Runnable {
 
@@ -34,6 +38,7 @@ public class TicTacToe implements Runnable {
     private Socket socket;
     private DataOutputStream dos;
     private DataInputStream dis;
+    
 
     private ServerSocket serverSocket;
 
@@ -42,6 +47,9 @@ public class TicTacToe implements Runnable {
     private BufferedImage blueX;
     private BufferedImage redCircle;
     private BufferedImage blueCircle;
+    private Timer gameTimer;
+    private int secondsElapsed;
+    private JLabel timerLabel;
 
     private String[] spaces = new String[9];
 
@@ -98,10 +106,36 @@ public class TicTacToe implements Runnable {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.setVisible(true);
+        
+        
 
         thread = new Thread(this, "TicTacToe");
         thread.start();
+        
+        
+        gameTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                secondsElapsed++;
+                updateTimerLabel();
+            }
+
+        });
+
+      
+        timerLabel = new JLabel("Time: 0 seconds");
+        timerLabel.setFont(new Font("Verdana", Font.BOLD, 20));
+        timerLabel.setBounds(10, HEIGHT - 40, WIDTH - 20, 30);
+        frame.add(timerLabel);
+
+        
+        gameTimer.start();
     }
+
+    private void updateTimerLabel() {
+        timerLabel.setText("Time: " + secondsElapsed + " seconds");
+    }
+    
 
     public void run() {
         while (true) {
@@ -113,7 +147,10 @@ public class TicTacToe implements Runnable {
             }
         }
     }
-
+    
+    
+    
+    
     private void render(Graphics g) {
         g.drawImage(board, 0, 0, null);
         if (unableToCommunicateWithOpponent) {
