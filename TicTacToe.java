@@ -6,8 +6,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -22,7 +20,6 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
 public class TicTacToe implements Runnable {
 
@@ -30,15 +27,16 @@ public class TicTacToe implements Runnable {
     private final int port = 22222;
     private final Scanner scanner = new Scanner(System.in);
     private JFrame frame;
-    private final int WIDTH = 506;
-    private final int HEIGHT = 527;
+    private final int WIDTH = 606;
+    private final int HEIGHT = 750;
     private Thread thread;
 
+    private int boardX; // Pozicioni X i foton e tavolinës
+    private int boardY; // Pozicioni Y i foton e tavolinës
     private Painter painter;
     private Socket socket;
     private DataOutputStream dos;
     private DataInputStream dis;
-    
 
     private ServerSocket serverSocket;
 
@@ -47,13 +45,9 @@ public class TicTacToe implements Runnable {
     private BufferedImage blueX;
     private BufferedImage redCircle;
     private BufferedImage blueCircle;
-    private Timer gameTimer;
-    private int secondsElapsed;
-    private JLabel timerLabel;
 
     private String[] spaces = new String[9];
 
-    
     private boolean yourTurn = false;
     private boolean circle = true;
     private boolean accepted = false;
@@ -61,6 +55,8 @@ public class TicTacToe implements Runnable {
     private boolean won = false;
     private boolean enemyWon = false;
     private boolean tie = false;
+
+    private String username;
 
     private int lengthOfSpace = 160;
     private int errors = 0;
@@ -81,10 +77,16 @@ public class TicTacToe implements Runnable {
             { 0, 4, 8 }, { 2, 4, 6 } };
 
     public TicTacToe() {
+        System.out.println("Please input the name: ");
+        String name = scanner.nextLine();
+        username = name;
         System.out.println("Please input the IP: ");
         String ip = scanner.nextLine();
         System.out.println("Please input the port: ");
         int port = scanner.nextInt();
+        System.out.println("User ip: " + ip);
+        // System.out.println("Username for player 1: " + username);
+        // System.out.println("Username for player 2: " + username);
         while (port < 1 || port > 65535) {
             System.out.println("The port you entered was invalid, please input another port: ");
             port = scanner.nextInt();
@@ -99,43 +101,21 @@ public class TicTacToe implements Runnable {
             initializeServer();
 
         frame = new JFrame();
-        frame.setTitle("Tic-Tac-Toe");
+        frame.setTitle("Tic-Tac-Toe - Player: " + username);
         frame.setContentPane(painter);
         frame.setSize(WIDTH, HEIGHT);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.setVisible(true);
-        
-        
+
+        // Llogarit pozicionin e foton e tavolinës për ta vendosur në qendër
+        boardX = (WIDTH - board.getWidth()) / 2;
+        boardY = (HEIGHT - board.getHeight()) / 2;
 
         thread = new Thread(this, "TicTacToe");
         thread.start();
-        
-        
-        gameTimer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                secondsElapsed++;
-                updateTimerLabel();
-            }
-
-        });
-
-      
-        timerLabel = new JLabel("Time: 0 seconds");
-        timerLabel.setFont(new Font("Verdana", Font.BOLD, 20));
-        timerLabel.setBounds(10, HEIGHT - 40, WIDTH - 20, 30);
-        frame.add(timerLabel);
-
-        
-        gameTimer.start();
     }
-
-    private void updateTimerLabel() {
-        timerLabel.setText("Time: " + secondsElapsed + " seconds");
-    }
-    
 
     public void run() {
         while (true) {
@@ -147,12 +127,10 @@ public class TicTacToe implements Runnable {
             }
         }
     }
-    
-    
-    
-    
+
     private void render(Graphics g) {
-        g.drawImage(board, 0, 0, null);
+        g.drawImage(board, boardX, boardY, null);
+        // g.drawImage(board, 0, 0, null);
         if (unableToCommunicateWithOpponent) {
             g.setColor(Color.RED);
             g.setFont(smallerFont);
@@ -188,6 +166,7 @@ public class TicTacToe implements Runnable {
                 drawWinningLine(g, g2);
                 drawEndGameMessage(g, g2);
             }
+
             if (tie) {
                 Graphics2D g2 = (Graphics2D) g;
                 g.setColor(Color.BLACK);
@@ -199,30 +178,59 @@ public class TicTacToe implements Runnable {
     }
 
     private void drawRedX(Graphics g, int i) {
-        g.drawImage(redX, (i % 3) * lengthOfSpace + 10 * (i % 3),
-                (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
+        g.drawImage(redX, boardX + (i % 3) * lengthOfSpace + 10 * (i % 3),
+                boardY + (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
     }
 
     private void drawBlueX(Graphics g, int i) {
-        g.drawImage(blueX, (i % 3) * lengthOfSpace + 10 * (i % 3),
-                (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
+        g.drawImage(blueX, boardX + (i % 3) * lengthOfSpace + 10 * (i % 3),
+                boardY + (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
     }
 
     private void drawRedCircle(Graphics g, int i) {
-        g.drawImage(redCircle, (i % 3) * lengthOfSpace + 10 * (i % 3),
-                (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
+        g.drawImage(redCircle, boardX + (i % 3) * lengthOfSpace + 10 * (i % 3),
+                boardY + (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
     }
 
     private void drawBlueCircle(Graphics g, int i) {
-        g.drawImage(blueCircle, (i % 3) * lengthOfSpace + 10 * (i % 3),
-                (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
+        g.drawImage(blueCircle, boardX + (i % 3) * lengthOfSpace + 10 * (i % 3),
+                boardY + (int) (i / 3) * lengthOfSpace + 10 * (int) (i / 3), null);
     }
 
+    // private void drawWinningLine(Graphics g, Graphics2D g2) {
+    // int startX = boardX + firstSpot % 3 * lengthOfSpace + lengthOfSpace / 2;
+    // int startY = boardY + (int) (firstSpot / 3) * lengthOfSpace + lengthOfSpace /
+    // 2;
+    // int endX = boardX + secondSpot % 3 * lengthOfSpace + lengthOfSpace / 2;
+    // int endY = boardY + (int) (secondSpot / 3) * lengthOfSpace + lengthOfSpace /
+    // 2;
+
+    // g2.drawLine(startX, startY, endX, endY);
+    // }
+
     private void drawWinningLine(Graphics g, Graphics2D g2) {
-        g2.drawLine(firstSpot % 3 * lengthOfSpace + 10 * firstSpot % 3 + lengthOfSpace / 2,
-                (int) (firstSpot / 3) * lengthOfSpace + 10 * (int) (firstSpot / 3) + lengthOfSpace / 2,
-                secondSpot % 3 * lengthOfSpace + 10 * secondSpot % 3 + lengthOfSpace / 2,
-                (int) (secondSpot / 3) * lengthOfSpace + 10 * (int) (secondSpot / 3) + lengthOfSpace / 2);
+        int startX = boardX + firstSpot % 3 * lengthOfSpace + lengthOfSpace / 2;
+        int startY = boardY + (int) (firstSpot / 3) * lengthOfSpace + lengthOfSpace / 2;
+        int endX = boardX + secondSpot % 3 * lengthOfSpace + lengthOfSpace / 2;
+        int endY = boardY + (int) (secondSpot / 3) * lengthOfSpace + lengthOfSpace / 2;
+
+        int lineLength = 650; // Gjatësia e linjës, mund ta ndryshoni vlerën sipas dëshirës
+        int lengthOfSpace = 650;
+        // Llogarit këndin dhe bën përshtatje në rast se vija është diagonale
+        double angle = Math.atan2(endY - startY, endX - startX);
+        if (Math.abs(angle) == Math.PI / 4 || Math.abs(angle) == 3 * Math.PI / 4) {
+            lineLength = (int) (lengthOfSpace * Math.sqrt(2)); // Përshtat gjatësinë për diagonale
+        }
+
+        // Llogarit pikat e fillimit dhe mbarimit të vijës duke përdorur llogaritjet
+        // trigonometrike
+        startX += (int) (lineLength / 2 * Math.cos(angle));
+        startY += (int) (lineLength / 2 * Math.sin(angle));
+        endX -= (int) (lineLength / 2 * Math.cos(angle));
+        endY -= (int) (lineLength / 2 * Math.sin(angle));
+
+        g2.setStroke(new BasicStroke(10));
+        g2.drawLine(startX, startY, endX, endY);
     }
 
     private void drawEndGameMessage(Graphics g, Graphics2D g2) {
@@ -230,13 +238,13 @@ public class TicTacToe implements Runnable {
         g.setFont(largerFont);
         String message = (won) ? wonString : enemyWonString;
         int stringWidth = g2.getFontMetrics().stringWidth(message);
-        g.drawString(message, WIDTH / 2 - stringWidth / 2, HEIGHT / 2);
+        g.drawString(message, boardX + (WIDTH - stringWidth) / 2, boardY + HEIGHT / 2);
     }
 
     private void drawTieMessage(Graphics g, Graphics2D g2) {
         g.setFont(largerFont);
         int stringWidth = g2.getFontMetrics().stringWidth(tieString);
-        g.drawString(tieString, WIDTH / 2 - stringWidth / 2, HEIGHT / 2);
+        g.drawString(tieString, boardX + (WIDTH - stringWidth) / 2, boardY + HEIGHT / 2);
     }
 
     private void drawWaitingMessage(Graphics g) {
@@ -245,7 +253,7 @@ public class TicTacToe implements Runnable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         int stringWidth = g2.getFontMetrics().stringWidth(waitingString);
-        g.drawString(waitingString, WIDTH / 2 - stringWidth / 2, HEIGHT / 2);
+        g.drawString(waitingString, boardX + (WIDTH - stringWidth) / 2, boardY + HEIGHT / 2);
     }
 
     private void tick() {
@@ -259,14 +267,21 @@ public class TicTacToe implements Runnable {
                     spaces[space] = "X";
                 else
                     spaces[space] = "O";
+
+                // Move the following lines here to check for win/tie after updating the game
+                // state
+                yourTurn = true;
                 checkForEnemyWin();
                 checkForTie();
-                yourTurn = true;
             } catch (IOException e) {
                 e.printStackTrace();
                 errors++;
             }
         }
+
+        // Move these lines outside the if block to check for win/tie after each tick
+        checkForWin();
+        checkForTie();
     }
 
     private void checkForWin() {
@@ -306,12 +321,18 @@ public class TicTacToe implements Runnable {
     }
 
     private void checkForTie() {
-        for (int i = 0; i < spaces.length; i++) {
-            if (spaces[i] == null) {
-                return;
+        // Check for a win first before checking for a tie
+        checkForWin();
+
+        // If neither player has won and all spaces are filled, set tie to true
+        if (!won && !enemyWon) {
+            for (int i = 0; i < spaces.length; i++) {
+                if (spaces[i] == null) {
+                    return;
+                }
             }
+            tie = true;
         }
-        tie = true;
     }
 
     private void listenForServerRequest() {
@@ -370,12 +391,17 @@ public class TicTacToe implements Runnable {
 
     private class Painter extends JPanel implements MouseListener {
         private static final long serialVersionUID = 1L;
+        private JLabel usernameLabel;
 
         public Painter() {
             setFocusable(true);
             requestFocus();
             setBackground(Color.WHITE);
             addMouseListener(this);
+            usernameLabel = new JLabel("Username: " + username);
+            usernameLabel.setFont(new Font("Verdana", Font.BOLD, 24));
+            usernameLabel.setForeground(Color.BLACK);
+            add(usernameLabel);
         }
 
         @Override
@@ -388,8 +414,8 @@ public class TicTacToe implements Runnable {
         public void mouseClicked(MouseEvent e) {
             if (accepted) {
                 if (yourTurn && !unableToCommunicateWithOpponent && !won && !enemyWon) {
-                    int x = e.getX() / lengthOfSpace;
-                    int y = e.getY() / lengthOfSpace;
+                    int x = (e.getX() - boardX) / lengthOfSpace;
+                    int y = (e.getY() - boardY) / lengthOfSpace;
                     y *= 3;
                     int position = x + y;
 
@@ -413,7 +439,7 @@ public class TicTacToe implements Runnable {
                         System.out.println("DATA WAS SENT");
                         checkForWin();
                         checkForTie();
-
+                        usernameLabel.setText("Username: " + username);
                     }
                 }
             }
@@ -439,4 +465,5 @@ public class TicTacToe implements Runnable {
 
         }
     }
+
 }
