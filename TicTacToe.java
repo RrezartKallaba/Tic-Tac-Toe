@@ -31,13 +31,8 @@ public class TicTacToe implements Runnable {
     private final int HEIGHT = 750;
     private Thread thread;
 
-<<<<<<< HEAD
-    private int boardX; // Pozicioni X i foton e tavolines
-    private int boardY; // Pozicioni Y i foton e tavolines
-=======
     private int boardX; // Pozicioni X i foton e tavolinës
     private int boardY; // Pozicioni Y i foton e tavolinës
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
     private Painter painter;
     private Socket socket;
     private DataOutputStream dos;
@@ -70,15 +65,6 @@ public class TicTacToe implements Runnable {
     private int firstSpot = -1;
     private int secondSpot = -1;
 
-<<<<<<< HEAD
-    private int player1Timer = 10; // Koha fillestare per lojtarin 1 (ne sekonda)
-    private int player2Timer = 10; // Koha fillestare per lojtarin 2 (ne sekonda)
-    private boolean timerExpired = false; // Tregon nese timeri ka skaduar
-    private int player1TimerDisplay = 10; // Koha e shfaqur per lojtarin 1 (ne sekonda)
-    private int player2TimerDisplay = 10; // Koha e shfaqur per lojtarin 2 (ne sekonda)
-
-    private boolean timerRunning = false; // Tregon nese timer eshte duke u ekzekutuar
-=======
     private int player1Timer = 5; // Koha fillestare për lojtarin 1 (në sekonda)
     private int player2Timer = 5; // Koha fillestare për lojtarin 2 (në sekonda)
     private boolean timerExpired = false; // Tregon nëse timeri ka skaduar
@@ -86,7 +72,6 @@ public class TicTacToe implements Runnable {
     private int player2TimerDisplay = 5; // Koha e shfaqur për lojtarin 2 (në sekonda)
 
     private boolean timerRunning = false; // Tregon nëse timer është duke u ekzekutuar
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
 
     private Font font = new Font("Verdana", Font.BOLD, 32);
     private Font smallerFont = new Font("Verdana", Font.BOLD, 20);
@@ -134,11 +119,7 @@ public class TicTacToe implements Runnable {
         frame.setResizable(false);
         frame.setVisible(true);
 
-<<<<<<< HEAD
-        // Llogarit pozicionin e foton e tavolines per ta vendosur ne qender
-=======
         // Llogarit pozicionin e foton e tavolinës për ta vendosur në qendër
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
         boardX = (WIDTH - board.getWidth()) / 2;
         boardY = (HEIGHT - board.getHeight()) / 2;
 
@@ -243,17 +224,6 @@ public class TicTacToe implements Runnable {
         int endX = boardX + secondSpot % 3 * lengthOfSpace + lengthOfSpace / 2;
         int endY = boardY + (int) (secondSpot / 3) * lengthOfSpace + lengthOfSpace / 2;
 
-<<<<<<< HEAD
-        int lineLength = 650; // Gjatesia e linjes, mund ta ndryshoni vleren sipas deshires
-        int lengthOfSpace = 650;
-        // Llogarit kendin dhe ben pershtatje ne rast se vija eshte diagonale
-        double angle = Math.atan2(endY - startY, endX - startX);
-        if (Math.abs(angle) == Math.PI / 4 || Math.abs(angle) == 3 * Math.PI / 4) {
-            lineLength = (int) (lengthOfSpace * Math.sqrt(2)); // Pershtat gjatesine per diagonale
-        }
-
-        // Llogarit pikat e fillimit dhe mbarimit te vijes duke perdorur llogaritjet
-=======
         int lineLength = 650; // Gjatësia e linjës, mund ta ndryshoni vlerën sipas dëshirës
         int lengthOfSpace = 650;
         // Llogarit këndin dhe bën përshtatje në rast se vija është diagonale
@@ -263,7 +233,6 @@ public class TicTacToe implements Runnable {
         }
 
         // Llogarit pikat e fillimit dhe mbarimit të vijës duke përdorur llogaritjet
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
         // trigonometrike
         startX += (int) (lineLength / 2 * Math.cos(angle));
         startY += (int) (lineLength / 2 * Math.sin(angle));
@@ -320,15 +289,9 @@ public class TicTacToe implements Runnable {
 
     private void resetTimerForCurrentPlayer() {
         if (circle) {
-<<<<<<< HEAD
-            player1Timer = 10;
-        } else {
-            player2Timer = 10;
-=======
             player1Timer = 5;
         } else {
             player2Timer = 5;
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
         }
     }
 
@@ -355,11 +318,7 @@ public class TicTacToe implements Runnable {
                 checkForEnemyWin();
                 checkForTie();
 
-<<<<<<< HEAD
-                // Nisni timerin kur merrni nje levizje nga kundershti
-=======
                 // Nisni timerin kur merrni një levizje nga kundershti
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
                 startTimer();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -367,15 +326,6 @@ public class TicTacToe implements Runnable {
             }
         }
 
-<<<<<<< HEAD
-        // Kontrollo kohen per lojtarin aktual dhe nderprit lojen nese koha ka skaduar
-        checkTimer();
-
-        // Perditeso kohen e shfaqur ne klasen Painter
-        updateTimersForDisplay();
-
-        // Kontrollo per fitoren dhe barazimet
-=======
         // Kontrollo kohën për lojtarin aktual dhe ndërprit lojën nëse koha ka skaduar
         checkTimer();
 
@@ -383,25 +333,12 @@ public class TicTacToe implements Runnable {
         updateTimersForDisplay();
 
         // Kontrollo për fitoren dhe barazimet
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
         checkForWin();
         checkForTie();
     }
 
     private void checkTimer() {
         if (timerExpired) {
-<<<<<<< HEAD
-            System.out.println("Koha ka skaduar!"); // Kontrollo ne console
-            // Koha ka skaduar, nderprit lojen dhe kaloni tek lojtari tjeter
-            switchTurns();
-        } else if (yourTurn && player1Timer <= 0) {
-            System.out.println("Koha ka skaduar per lojtarin 1!"); // Kontrollo ne console
-            // Koha ka skaduar per lojtarin 1, nderprit lojen ose nderroni lojtarin
-            timerExpired = true;
-        } else if (!yourTurn && player2Timer <= 0) {
-            System.out.println("Koha ka skaduar per lojtarin 2!"); // Kontrollo ne console
-            // Koha ka skaduar per lojtarin 2, nderprit lojen ose nderroni lojtarin
-=======
             System.out.println("Koha ka skaduar!"); // Kontrollo në console
             // Koha ka skaduar, ndërprit lojën dhe kaloni tek lojtari tjetër
             switchTurns();
@@ -412,22 +349,11 @@ public class TicTacToe implements Runnable {
         } else if (!yourTurn && player2Timer <= 0) {
             System.out.println("Koha ka skaduar për lojtarin 2!"); // Kontrollo në console
             // Koha ka skaduar për lojtarin 2, ndërprit lojën ose ndërroni lojtarin
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
             timerExpired = true;
         }
     }
 
     private void switchTurns() {
-<<<<<<< HEAD
-        System.out.println("Kalimi i radhes se lojtareve!"); // Kontrollo ne console
-        yourTurn = !yourTurn;
-        opponentTurn = !yourTurn; // Perditeso variablen e re
-        System.out.println("yourTurn aktual: " + yourTurn); // Shtoni kete printim
-        System.out.println("opponentTurn aktual: " + opponentTurn); // Shtoni kete prinUSER tim
-        resetTimerForCurrentPlayer(); // Riazhoni timerin per lojtarin aktual
-        timerExpired = false;
-        startTimer(); // Nisni timerin per lojtarin aktual
-=======
         System.out.println("Kalimi i radhës së lojtarëve!"); // Kontrollo në console
         yourTurn = !yourTurn;
         opponentTurn = !yourTurn; // Përditëso variablën e re
@@ -436,7 +362,6 @@ public class TicTacToe implements Runnable {
         resetTimerForCurrentPlayer(); // Riazhoni timerin për lojtarin aktual
         timerExpired = false;
         startTimer(); // Nisni timerin për lojtarin aktual
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
     }
 
     private void checkForWin() {
@@ -564,11 +489,7 @@ public class TicTacToe implements Runnable {
             super.paintComponent(g);
             render(g);
 
-<<<<<<< HEAD
-            // Shfaq kohen e lojtarit aktual
-=======
             // Shfaq kohën e lojtarit aktual
->>>>>>> f3d7095b6c5de8a83b437d4fb88ec6ace2ca9ace
             g.setColor(Color.BLACK);
             g.setFont(new Font("Verdana", Font.BOLD, 18));
             g.setColor(Color.RED);
